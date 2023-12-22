@@ -2,7 +2,8 @@ import time
 import datetime
 import pandas as pd 
 
-
+import requests
+import Keps
 
 
 def stock_data(ticker):
@@ -18,4 +19,42 @@ def stock_data(ticker):
     df = pd.read_csv(query_string)
     result = print(df)
     return result
-stock_data("TSLA")
+
+
+def get_stock_news(ticker, api_key):
+    
+    base_url = "https://stocknewsapi.com/api/v1"
+    params = {
+        'tickers': ticker,
+        'items': 3,  # Adjusted to 3 items for the trial plan
+        'page': 1,
+        'token': api_key
+    }
+    
+    try:
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()  # This will raise an error for HTTP error codes
+
+        # Parse the JSON response
+        news_data = response.json()
+
+        # Extract the news articles from the response
+        articles = news_data.get('data', [])
+        return articles
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
+
+api_key = Keps.api_key
+ticker = 'AMZN'
+news_items = get_stock_news(ticker, api_key)
+
+res = [[article['tickers'], article['date'], article['sentiment']] for article in news_items]
+print(res)
+
+
+
+
+
